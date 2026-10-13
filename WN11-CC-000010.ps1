@@ -50,45 +50,17 @@
     Tenable compliance verification: PASSED.
 #>
 
+# Set the registry path
+$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
 
-$ErrorActionPreference = "Stop"
-
-$Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
-$Name = "NoLockScreenSlideshow"
-$RequiredValue = 1
-
-try {
-    # Check current configuration
-    $Before = Get-ItemProperty -Path $Path `
-        -Name $Name -ErrorAction SilentlyContinue
-
-    Write-Host "Before: $($Before.$Name)"
-
-    # Create registry path if missing
-    New-Item -Path $Path -Force | Out-Null
-
-    # Apply STIG remediation
-    New-ItemProperty -Path $Path `
-        -Name $Name `
-        -Value $RequiredValue `
-        -PropertyType DWord `
-        -Force | Out-Null
-
-    # Verify registry value
-    $After = Get-ItemPropertyValue -Path $Path -Name $Name
-
-    if ($After -eq $RequiredValue) {
-        Write-Host "PASS: WN11-CC-000010 registry setting applied." `
-            -ForegroundColor Green
-    }
-    else {
-        Write-Host "FAIL: Incorrect registry value." `
-            -ForegroundColor Red
-        exit 1
-    }
+# Create the registry path if it doesn't exist
+if (-not (Test-Path $registryPath)) {
+    New-Item -Path $registryPath -Force | Out-Null
 }
-catch {
-    Write-Host "ERROR: $($_.Exception.Message)" `
-        -ForegroundColor Red
-    exit 1
-}
+
+# Disable lock screen slideshow
+New-ItemProperty -Path $registryPath -Name "NoLockScreenSlideshow" -Value 1 -PropertyType DWord -Force | Out-Null
+
+# Confirm the value was set
+Get-ItemProperty -Path $registryPath |
+    Select-Object NoLockScreenSlideshow
