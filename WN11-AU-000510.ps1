@@ -40,36 +40,17 @@
     Verify compliance by rescanning the system using
     Tenable Windows Compliance Checks.
 #>
-$Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\System"
-$Name = "MaxSize"
-$RequiredValue = 32768
+# Set the registry path
+$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EventLog\System"
 
-# Check current registry value
-$Before = Get-ItemProperty -Path $Path `
-    -Name $Name -ErrorAction SilentlyContinue
-
-Write-Host "Current value: $($Before.$Name)"
-
-# Create registry path if missing
-New-Item -Path $Path -Force -ErrorAction Stop |
-    Out-Null
-
-# Apply STIG remediation
-New-ItemProperty -Path $Path `
-    -Name $Name `
-    -Value $RequiredValue `
-    -PropertyType DWORD `
-    -Force -ErrorAction Stop | Out-Null
-
-# Verify registry configuration
-$After = (Get-ItemProperty -Path $Path `
-    -Name $Name -ErrorAction Stop).$Name
-
-if ($After -ge $RequiredValue) {
-    Write-Host "PASS: WN11-AU-000510 remediated." `
-        -ForegroundColor Green
-} else {
-    Write-Host "FAIL: Remediation unsuccessful." `
-        -ForegroundColor Red
-    exit 1
+# Create the registry path if it doesn't exist
+if (-not (Test-Path $registryPath)) {
+    New-Item -Path $registryPath -Force | Out-Null
 }
+
+# Set the maximum log size to 32768 KB
+New-ItemProperty -Path $registryPath -Name "MaxSize" -Value 32768 -PropertyType DWord -Force | Out-Null
+
+# Confirm the value was set
+Get-ItemProperty -Path $registryPath |
+    Select-Object MaxSize
