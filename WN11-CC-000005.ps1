@@ -49,36 +49,18 @@
     The remediation was verified as PASSED in Tenable.
 #>
 
-$Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
-$Name = "NoLockScreenCamera"
-$RequiredValue = 1
+# Set the registry path
+$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization"
 
-# Display current setting
-$Before = Get-ItemProperty -Path $Path `
-    -Name $Name -ErrorAction SilentlyContinue
+# Create the registry path if it doesn't exist
+if (-not (Test-Path $registryPath)) {
+    New-Item -Path $registryPath -Force | Out-Null
+}
 
-Write-Host "Before: $($Before.$Name)"
+# Disable lock screen camera
+New-ItemProperty -Path $registryPath -Name "NoLockScreenCamera" -Value 1 -PropertyType DWord -Force | Out-Null
 
-# Create registry path if needed
-New-Item -Path $Path -Force -ErrorAction Stop |
-    Out-Null
-
-# Apply STIG remediation
-New-ItemProperty -Path $Path `
-    -Name $Name `
-    -Value $RequiredValue `
-    -PropertyType DWord `
-    -Force -ErrorAction Stop | Out-Null
-
-# Verify the new setting
-$After = (Get-ItemProperty -Path $Path `
-    -Name $Name -ErrorAction Stop).$Name
-
-if ($After -eq $RequiredValue) {
-    Write-Host "PASS: WN11-CC-000005 registry setting applied." `
-        -ForegroundColor Green
-} else {
-    Write-Host "FAIL: Remediation unsuccessful." `
-        -ForegroundColor Red
-    exit 1
+# Confirm the value was set
+Get-ItemProperty -Path $registryPath |
+    Select-Object NoLockScreenCamera
 }
