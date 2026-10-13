@@ -1,10 +1,8 @@
+
 <#
 .SYNOPSIS
-    This PowerShell script disables lock screen slide shows
-    on Windows 11 by configuring the NoLockScreenSlideshow
-    registry value to 1.
-
-    This remediates STIG WN11-CC-000010.
+    Disables slide shows on the Windows 11 lock screen
+    to prevent unintended disclosure of images.
 
 .NOTES
     Author          : Golam Tanvir Rahman
@@ -16,38 +14,17 @@
     CVEs            : N/A
     Plugin IDs      : N/A
     STIG-ID         : WN11-CC-000010
-    Documentation   : https://stigaview.com/products/win11/v2r7/WN11-CC-000010/
+    Documentation   : https://stigaview.com/products/win11/v2r9/WN11-CC-000010/
 
 .TESTED ON
-    Date(s) Tested  : 
-    Tested By       : 
-    Systems Tested  : 
-    PowerShell Ver. : 
+    Date(s) Tested  : 2026-10-12
+    Tested By       : Golam Tanvir Rahman
+    Systems Tested  : Windows 11 Azure VM
+    PowerShell Ver. : 5.1.26100.9444
 
 .USAGE
-    Run this script in PowerShell with Administrator privileges.
-
-    The script creates or modifies the following registry entry:
-
-    Registry Path:
-    HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization
-
-    Value Name : NoLockScreenSlideshow
-    Value Type : REG_DWORD
-    Value Data : 1
-
-    This prevents Windows 11 from displaying slide shows
-    on the lock screen.
-
-    Example syntax:
+    Run PowerShell as Administrator.
     PS C:\> .\WN11-CC-000010.ps1
-
-    Verification:
-    Confirm that NoLockScreenSlideshow is set to 1.
-    Run a Tenable Windows 11 STIG compliance scan and verify
-    that WN11-CC-000010 reports PASSED.
-
-    Tenable compliance verification: PASSED.
 #>
 
 # Set the registry path
@@ -58,7 +35,7 @@ if (-not (Test-Path $registryPath)) {
     New-Item -Path $registryPath -Force | Out-Null
 }
 
-# Disable lock screen slideshow
+# Disable lock screen slide shows
 New-ItemProperty -Path $registryPath -Name "NoLockScreenSlideshow" -Value 1 -PropertyType DWord -Force | Out-Null
 
 # Confirm the value was set
